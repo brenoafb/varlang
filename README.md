@@ -4,6 +4,8 @@ This program aims to explore variability-aware programming.
 
 As such, we implement a simple variational programming language.
 
+## Motivation
+
 Suppose we have a function `twice` which doubles its parameter.
 We can implement it in at least two ways.
 
