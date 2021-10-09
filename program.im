@@ -1,0 +1,7 @@
+func twice(n) {
+  return 2 * n;
+}
+
+func main() {
+  x = twice(2);
+}
