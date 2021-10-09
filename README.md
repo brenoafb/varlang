@@ -52,8 +52,10 @@ Which results in the following AST.
 ```
 dim Impl<plus, times> in
   Decl "twice" ["x"]
-    ( VExpr Impl<Add {e1 = Var "x", e2 = Var "x"}
-    , Mult {e1 = Num 2, e2 = Var "x"}>
+    ( VExpr Impl
+        < Add {e1 = Var "x", e2 = Var "x"}
+        , Mult {e1 = Num 2, e2 = Var "x"}
+        >
     )
 ```
 
