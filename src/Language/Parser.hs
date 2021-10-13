@@ -1,71 +1,61 @@
-module Language.Parser
-  ( parseStr
-  ) where
+{-# LANGUAGE OverloadedStrings #-}
+
+module Language.Parser where
 
 import Language.Syntax
-
-import Control.Monad
 import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
+import qualified Data.Text as T
 
 languageDef =
-  emptyDef { Token.commentStart    = "/*"
-           , Token.commentEnd      = "*/"
-           , Token.commentLine     = "//"
-           , Token.identStart      = letter
-           , Token.identLetter     = alphaNum
-           , Token.reservedNames   = []
-           , Token.reservedOpNames = [ "+", "-", "*", "/"
-                                     , "="
-                                     ]
+  emptyDef { Token.commentLine     = ";"
+           , Token.identStart      = alphaNum <|> oneOf ":!#$%&*+./<=>?@\\^|-~_"
+           , Token.identLetter     = alphaNum <|> oneOf ":!#$%&*+./<=>?@\\^|-~_"
            }
 
 lexer = Token.makeTokenParser languageDef
 
 identifier = Token.identifier lexer
-reserved = Token.reserved lexer
-reservedOp = Token.reservedOp lexer
 parens = Token.parens lexer
-int = fromIntegral <$> Token.integer lexer
-semi = Token.semi lexer
+int = fromIntegral <$> Token.natural lexer
+double = Token.float lexer
 whiteSpace = Token.whiteSpace lexer
-braces = Token.braces lexer
 comma = Token.comma lexer
+stringLiteral = Token.stringLiteral lexer
+reservedOp = Token.reservedOp lexer
+
+parseStr :: T.Text -> Either ParseError Program
+parseStr str = parse program "" (T.unpack str)
 
 program :: Parser Program
-program = whiteSpace >> many decl
-
-decl :: Parser Decl
-decl = do
-  name <- identifier
-  args <- parens (identifier `sepBy` comma)
-  reservedOp "="
-  body <- expr
-  return $ Decl name args body
+program = whiteSpace >> many expr
 
 expr :: Parser Expr
-expr = try funCall <|> buildExpressionParser operators term
+expr = try doubleExpr
+  <|> try intExpr
+  <|> quote
+  <|> atom
+  <|> stringExpr
+  <|> list
 
-funCall :: Parser Expr
-funCall = do
-  funName <- identifier
-  args <- parens (sepBy expr comma)
-  return $ FunCall funName args
+doubleExpr :: Parser Expr
+doubleExpr = DoubleExpr <$> double
 
-operators = [ [Prefix (reservedOp "-" >> return Neg)]
-            , [Infix  (reservedOp "*" >> return Mult) AssocLeft,
-               Infix  (reservedOp "/" >> return Div) AssocLeft]
-            , [Infix  (reservedOp "+" >> return Add) AssocLeft,
-               Infix  (reservedOp "-" >> return Sub) AssocLeft]
-            ]
+intExpr :: Parser Expr
+intExpr = IntExpr <$> int
 
-term = parens expr
-     <|>  Var <$> identifier
-     <|> Num <$> int
+atom :: Parser Expr
+atom = Atom . T.pack <$> identifier
 
-parseStr :: String -> Program
-parseStr str = case parse program "" str of
-                 Left e -> error $ show e
-                 Right r -> r
+quote :: Parser Expr
+quote = do
+  _ <- char '\''
+  Quote <$> expr
+
+list :: Parser Expr
+list = List <$> parens exprs
+  where exprs = many expr
+
+stringExpr :: Parser Expr
+stringExpr = Str . T.pack <$> stringLiteral

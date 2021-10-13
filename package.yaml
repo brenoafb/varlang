@@ -25,6 +25,9 @@ dependencies:
 - parsec
 - choice-calculus
 - pretty-simple
+- mtl
+- text
+- containers
 
 library:
   source-dirs: src
