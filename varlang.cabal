@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Analyzer
       Language.Parser
       Language.Syntax
   other-modules:

@@ -4,7 +4,7 @@
 module Language.Syntax where
 
 import Data.Data
-import Data.Var
+import CC.Syntax
 
 import Control.Monad.State
 import Control.Monad.Except
@@ -25,9 +25,9 @@ data Expr = Atom       T.Text
           | IntExpr    Int
           | DoubleExpr Double
           | Quote      Expr
-          | NativeFunc ([Expr] -> Eval Expr)
           | List       [Expr]
           | VExpr      VExpr
+          deriving Data
 
 true :: Expr
 true = Atom "#t"
@@ -41,7 +41,6 @@ instance Show Expr where
   show (IntExpr x)    = "IntExpr " ++ show x
   show (DoubleExpr x) = "DoubleExpr " ++ show x
   show (Quote x)      = "Quote " ++ show x
-  show (NativeFunc _) = "<native function>"
   show (List xs)      = "List " ++ show xs
   show (VExpr ve)     = "VExpr " ++ show ve
 
@@ -51,7 +50,6 @@ display (Str t)        = "\"" <> t <> "\""
 display (IntExpr x)    = T.pack $ show x
 display (DoubleExpr x) = T.pack $ show x
 display (Quote t)      = "'" <> display t
-display (NativeFunc _) = "<native function>"
 display (List xs)      = "(" <> T.unwords (map display xs) <> ")"
 display (VExpr ve)     = "[| " <> T.pack (show ve) <> " |]"
 
@@ -62,4 +60,5 @@ instance Eq Expr where
   (DoubleExpr x) == (DoubleExpr y) = x == y
   (Quote x)      == (Quote y)      = x == y
   (List xs)      == (List ys)      = xs == ys
+  (VExpr v1)     == (VExpr v2)     = v1 == v2
   _              == _              = False

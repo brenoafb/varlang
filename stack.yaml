@@ -33,8 +33,9 @@ packages:
 - .
 
 extra-deps:
-- github: brenoafb/choice-calculus
-  commit: 7406af97879a97fcfc70d6da0c583c21b1197d62
+- github: brenoafb/CC-GTTSE
+  commit: 258abf34bc5ae60693a7a08c9b18c1b5b30e7233
+- syz-0.2.0.0@sha256:7307acb8f6ae7720e7e235c974281ecee912703c1394ebcac19caf83d70bb492,2345
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
