@@ -2,6 +2,7 @@
 module Main where
 
 import CC.Syntax
+import CC.Semantics
 import Examples.Edit hiding (addAlt, extend)
 import Data.Generics
 import Language.Syntax
@@ -34,6 +35,31 @@ vtwice =
             [ List [ Atom "+", v , v ]
             , List [ Atom "*", IntExpr 2, v ]
             ]
+
+vtwice' =
+    Dim "Impl" ["plus" , "times"]
+  $ Dim "Par"  ["x"    , "y"]
+  $ Dim "Name" ["twice", "double"]
+  $ Obj $ List
+    [ Atom "define"
+    , List [ n, v ]
+    , i
+    ]
+  where v = choice "Par" [Atom "x", Atom "y"]
+        i = choice "Impl"
+            [ List [ Atom "+", v , v ]
+            , List [ Atom "*", IntExpr 2, v ]
+            ]
+        n = choice "Name" [Atom "twice", Atom "double"]
+
+twiceOrDouble =
+  Dim "Name" ["twice", "double"]
+  $ Obj $ List
+    [ Atom "define"
+    , List [ n, Atom "x" ]
+    , List [ Atom "+", Atom "x" , Atom "x" ]
+    ]
+  where n = choice "Name" [Atom "twice", Atom "double"]
 
 addPar :: Expr -> Expr
 addPar (Atom "x") = choice "Par" [Atom "x", Atom "y"]
