@@ -3,18 +3,18 @@ module Analyzer where
 
 import Debug.Trace (trace)
 import Data.Generics
-import Language.Syntax
+import Language.Expr
 import CC.Syntax
 import Control.Applicative
-import qualified Data.Text as T
 import Data.List (nub)
 
-isOperator :: T.Text -> Bool
-isOperator = (`elem` ["+", "-", "*", "/"])
+import qualified Language.PExpr as P
+import qualified Data.Text as T
 
-countOperations :: Expr -> Int
+-- count arithmetic operations in an expression
+countOperations :: P.Expr -> Int
 countOperations = everything (+) (0 `mkQ` f)
-  where f (List ((Atom x):_))
+  where f (P.List ((P.Atom x):_))
           | isOperator x = 1
           | otherwise    = 0
         f _ = 0
@@ -34,10 +34,14 @@ vCountOperations ve = do
       where vcs = map (vCountOperations . pure) es
     _ -> pure 0
 
+isOperator :: T.Text -> Bool
+isOperator = (`elem` ["+", "-", "*", "/"])
 
-countChars :: Expr -> Int
+-- count characters in strings and atoms
+countChars :: P.Expr -> Int
 countChars = everything (+) (0 `mkQ` f)
-  where f (Atom x) = T.length x
+  where f (P.Atom t) = T.length t
+        f (P.Str  t) = T.length t
         f _ = 0
 
 vCountChars :: V Expr -> V Int
@@ -52,18 +56,20 @@ vCountChars ve = do
       where vcs = map (vCountChars . pure) es
     _         -> pure 0
 
-getAtoms :: Expr -> [T.Text]
+-- get a list of unique atoms in the expression
+getAtoms :: P.Expr -> [Ident]
 getAtoms = nub . everything mappend ([] `mkQ` f)
-  where f (Atom t) = [t]
+  where f (P.Atom t) = [t]
         f _        = []
 
-vGetAtoms :: V Expr -> V [T.Text]
-vGetAtoms ve = do
-  e <- ve
-  case e of
-    Atom t -> pure [t]
-    Quote q -> vGetAtoms $ pure q
-    VExpr ve' -> vGetAtoms ve'
-    List es -> mconcat <$> sequenceA vcs
-      where vcs = map (vGetAtoms . pure) es
-    _ -> pure []
+vGetAtoms :: V Expr -> V [Ident]
+vGetAtoms ve = nub <$> result
+  where result = do
+          e <- ve
+          case e of
+            Atom t -> pure [t]
+            Quote q -> vGetAtoms $ pure q
+            VExpr ve' -> vGetAtoms ve'
+            List es -> mconcat <$> sequenceA vcs
+              where vcs = map (vGetAtoms . pure) es
+            _ -> pure []

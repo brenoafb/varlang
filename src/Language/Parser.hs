@@ -2,7 +2,7 @@
 
 module Language.Parser where
 
-import Language.Syntax
+import Language.Expr
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token

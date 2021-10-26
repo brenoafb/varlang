@@ -5,21 +5,21 @@ import CC.Syntax
 import CC.Semantics
 import Examples.Edit hiding (addAlt, extend)
 import Data.Generics
-import Language.Syntax
+import Language.Expr
 import Language.Parser
 import Text.Pretty.Simple (pPrint)
-import qualified Data.Text as T
 
-type Ident = T.Text
+import qualified Data.Text as T
+import qualified Language.PExpr as P
 
 choice :: Dim -> [Expr] -> Expr
 choice d es = VExpr $ Chc d (map Obj es)
 
 twice =
-  List
-    [ Atom "define"
-    , List [ Atom "twice", Atom "x" ]
-    , List [ Atom "+", Atom "x", Atom "x" ]
+  P.List
+    [ P.Atom "define"
+    , P.List [ P.Atom "twice", P.Atom "x" ]
+    , P.List [ P.Atom "+", P.Atom "x", P.Atom "x" ]
     ]
 
 vtwice =

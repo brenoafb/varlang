@@ -26,8 +26,9 @@ source-repository head
 library
   exposed-modules:
       Analyzer
+      Language.Expr
       Language.Parser
-      Language.Syntax
+      Language.PExpr
   other-modules:
       Paths_varlang
   hs-source-dirs:

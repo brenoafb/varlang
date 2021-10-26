@@ -1,13 +1,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Language.Syntax where
+module Language.PExpr where
 
 import Data.Data
-import CC.Syntax
 
-import Control.Monad.State
-import Control.Monad.Except
 import qualified Data.Map as M
 import qualified Data.Text as T
 
@@ -16,17 +13,14 @@ type Program = [Expr]
 type Frame = M.Map T.Text Expr
 type Env = [Frame]
 type Error = T.Text
-type Eval t = ExceptT Error (State Env) t
 
-type VExpr = V Expr
-
+-- plain expression
 data Expr = Atom       T.Text
           | Str        T.Text
           | IntExpr    Int
           | DoubleExpr Double
           | Quote      Expr
           | List       [Expr]
-          | VExpr      VExpr
           deriving Data
 
 true :: Expr
@@ -42,7 +36,6 @@ instance Show Expr where
   show (DoubleExpr x) = "DoubleExpr " ++ show x
   show (Quote x)      = "Quote " ++ show x
   show (List xs)      = "List " ++ show xs
-  show (VExpr ve)     = "VExpr " ++ show ve
 
 display :: Expr -> T.Text
 display (Atom t)       = t
@@ -51,7 +44,6 @@ display (IntExpr x)    = T.pack $ show x
 display (DoubleExpr x) = T.pack $ show x
 display (Quote t)      = "'" <> display t
 display (List xs)      = "(" <> T.unwords (map display xs) <> ")"
-display (VExpr ve)     = "[| " <> T.pack (show ve) <> " |]"
 
 instance Eq Expr where
   (Atom x)       == (Atom y)       = x == y
@@ -60,5 +52,4 @@ instance Eq Expr where
   (DoubleExpr x) == (DoubleExpr y) = x == y
   (Quote x)      == (Quote y)      = x == y
   (List xs)      == (List ys)      = xs == ys
-  (VExpr v1)     == (VExpr v2)     = v1 == v2
   _              == _              = False
